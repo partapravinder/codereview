@@ -1,0 +1,14 @@
+== Algorithms
+
+.	Create Cabinet:
+*	Create Cabinet core API
+
+.	Delete Cabinet:
+*	Delete Cabinet core API
+
+.	Get Cabinets:
+*	Get Cabinets core API
+
+.	Update Cabinet Info:
+*	Update Cabinet Info core API
+
