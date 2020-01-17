@@ -1,0 +1,322 @@
+package com.newgen.service;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.newgen.controller.ExceptionThrower;
+import com.newgen.dao.ContentDao;
+import com.newgen.dao.FolderDao;
+import com.newgen.exception.CustomException;
+import com.newgen.model.Content;
+import com.newgen.model.ContentLocation;
+import com.newgen.model.Folder;
+import com.newgen.model.Lock;
+import com.newgen.wrapper.service.WrapperService;
+
+@Service
+public class ContentService extends ExceptionThrower {
+
+	@Autowired
+	ContentDao contentDao;
+
+
+	@Autowired
+	FolderDao folderDao;
+
+	
+	@Autowired
+	ContentLocationService contentLocationService;
+
+	@Autowired
+	LockService lockService;
+
+	@Autowired
+	WrapperService service;
+	
+	private static final Logger logger = LoggerFactory.getLogger(ContentService.class);
+
+	public Content insert(Content content,String tenantId) throws CustomException {
+		logger.debug("Creating content=> " + content);
+		/*if (content.getId() == null) {
+			content.setId(String.valueOf(sequenceDao.getNextSequenceId("documentindex"))); 
+		}*/
+		return contentDao.insert(content,tenantId);
+	}
+
+	public Content update(String id, String updateContentParams, Long version,String tenantId) throws CustomException {
+		return update(id, updateContentParams, version, false,tenantId);
+	}
+	public Content checkOut(String id, String updateContentParams,String tenantId) throws CustomException {
+		return update(id, updateContentParams, false,tenantId);
+	}
+
+	public Content update(String id, String updateContentParams, Long version, boolean ignoreCommittedFlag,String tenantId)
+			throws CustomException {
+		logger.debug("Updating Content with id: " + id + " and version: " + version);
+		Content content = contentDao.findAndModify(id, updateContentParams, version, ignoreCommittedFlag,tenantId);
+
+		if (content == null) {
+			content = contentDao.findOne(id,tenantId);
+			if (content == null) {
+				throwContentNotFoundException();
+			} else {
+				if (version != null && !Long.toString(content.getVersion()).equalsIgnoreCase(Long.toString(version))) {
+					throwVersionConflictException();
+				} else {
+					throwUnknownErrorException();
+				}
+			}
+		}
+		return content;
+	}
+	public Content update(String id, String updateContentParams, boolean ignoreCommittedFlag,String tenantId)
+			throws CustomException {
+		logger.debug("Updating Content with id: " + id );
+		//Content content = contentDao.findAndModify(id, updateContentParams, version, ignoreCommittedFlag,tenantId);
+		Content content = contentDao.findAndModify(id, updateContentParams,tenantId);
+		
+		if (content == null) {
+			content = contentDao.findOne(id,tenantId);
+			if (content == null) {
+				throwContentNotFoundException();
+			} else {
+					throwUnknownErrorException();
+			}
+		}
+		return content;
+	}
+
+	public void deleteContent(String id, String version,String tenantId) throws CustomException {
+		logger.debug("Deleting Content with id: " + id + " and version: " + version);
+		if (version == null || version.isEmpty()) {
+			if (contentDao.findAndRemoveById(id,tenantId) == null) {
+				throwContentNotFoundException();
+			}
+		} else {
+			if (contentDao.findAndRemoveByIdAndVersion(id, version,tenantId) == null) {
+				Content content = contentDao.findOne(id,tenantId);
+				if (content == null) {
+					throwContentNotFoundException();
+				} else {
+					if (!Long.toString(content.getVersion()).equalsIgnoreCase(version)) {
+						throwVersionConflictException();
+					} else {
+						throwUnknownErrorException();
+					}
+				}
+			}
+		}
+	}
+
+	public List<Content> search(Map<String, String[]> allRequestParams,String tenantId) {
+		logger.debug("Searching for contents with : " + allRequestParams);
+		return contentDao.findAllContents(allRequestParams,tenantId);
+	}
+
+	public List<Content> searchByPage(Map<String, String[]> allRequestParams,String tenantId,int pno) {
+		logger.debug("Searching for contents with : " + allRequestParams);
+		return contentDao.findAllContentsByPage(allRequestParams,tenantId,pno);
+	}
+	
+	public Content findById(String id,String tenantId) throws CustomException {
+		logger.debug("Finding a content by id: " + id);
+		return contentDao.findOne(id,tenantId);
+	}
+	
+	public Content findUncommitedById(String id,String tenantId) throws CustomException {
+		logger.debug("Finding a content by id: " + id);
+		return contentDao.findUncommitedOne(id,tenantId);
+	}
+	
+//	public Content findAllById(String id,String tenantId) throws CustomException {
+//		logger.debug("Finding a content by id: " + id);
+//		return contentDao.findEveryType(id,tenantId);
+//	}
+	
+	
+	public Folder findFolderById(String id,String tenantId) throws CustomException {
+		logger.debug("Finding a folder by id");
+		return folderDao.findById(id,tenantId);
+	}
+
+	public List<Content> listContentsForParentFolderId(String parentFolderId,String tenantId) {
+		logger.debug("Finding Contents with parentFolderId: " + parentFolderId);
+		return contentDao.findByParentFolderId(parentFolderId,tenantId);
+	}
+
+	public List<Content> findByName(String name,String tenantId) {
+		logger.debug("Finding Contents by name: " + name);
+		return contentDao.findByName(name,tenantId);
+	}
+
+	public void markDeleteContent(String id, String version,String tenantId) throws CustomException {
+		logger.debug("Mark the content for delete with id: " + id + " and version: " + version);
+		JSONObject deleteFlagParam = new JSONObject();
+		deleteFlagParam.put("deleted", "true");
+		Long versionValue = version == null ? null : Long.valueOf(version);
+		update(id, deleteFlagParam.toString(), versionValue,tenantId);
+	}
+
+	public Content moveContent(String id, String targetFolderId, Long version,String tenantId) throws CustomException {
+		logger.debug("Moving the content to: " + targetFolderId + " with id: " + id + " and version: " + version);
+		Content content = contentDao.updateParentFolderId(id, targetFolderId, version,tenantId);
+		if (content == null) {
+			content = contentDao.findOne(id,tenantId);
+			if (content == null) {
+				throwContentNotFoundException();
+			} else {
+				if (version != null && !Long.toString(content.getVersion()).equalsIgnoreCase(Long.toString(version))) {
+					throwVersionConflictException();
+				} else {
+					throwUnknownErrorException();
+				}
+			}
+		}
+		return content;
+	}
+
+	public List<Content> findAllDeletedContents() {
+		logger.debug("Finding all contents marked for delete");
+		return contentDao.findAllDeletedContents();
+	}
+
+	public void deleteContentLocationLink(String id,String tenantId) {
+		logger.debug("Finding and remove content location from content with id: " + id);
+		Content content = contentDao.findAndRemoveContentLocation(id,tenantId);
+		if (content == null) {
+			logger.debug("Content already deleted with id:" + id);
+		}
+	}
+
+	public Content findContentWithContentLocation(String id,String tenantId) {
+		return contentDao.findContentWithContentLocation(id,tenantId);
+	}
+
+	public void releaseLock(String id,String tenantId) throws Exception {
+		lockService.delete(id,tenantId);
+	}
+
+	public Lock getExclusiveLock(String id, String guid,String tenantId) throws CustomException {
+		return lockService.getLock(id, guid, "exclusive",tenantId);
+	}
+
+	public Lock getSharedLock(String id, String guid,String tenantId) throws CustomException {
+		return lockService.getLock(id, guid, "shared",tenantId);
+	}
+
+	
+	public Content copyContent(String parentFolderId, String id,String tenantId) throws CustomException {
+		Content copiedContent = null;
+		String lockId = null;
+		String guid = UUID.randomUUID().toString();
+		try {
+			// Get Shared lock on parentFolderId
+			lockId = parentFolderId;
+			getSharedLock(lockId, guid,tenantId);
+ 
+			// Check if the parent folder exists or not
+			Folder folder = folderDao.findById(parentFolderId,tenantId);
+			if (folder != null) {
+				// Check if the content exists or not
+				Content content = findById(id,tenantId);
+				if (content != null) {
+
+					// Increase count on content location
+					ContentLocation contentLocation = contentLocationService
+							.increaseCount(content.getContentLocationId(),tenantId);
+
+					Content contentCopy = new Content(null, content.getName(), content.getContentType(),
+							content.getComments(), folder.getId(), content.getOwnerName(), content.getOwnerId(),
+							content.getContentLocationId(), new Date(), content.getRevisedDateTime(),
+							content.getAccessDateTime(), content.getNoOfPages(), content.getDocumentType(), content.getDocumentSize(),
+							content.getMetadata(),tenantId);
+
+					// Create the copied content
+					copiedContent = insert(contentCopy,tenantId);
+
+					copiedContent.setContentLocationId(contentLocation.getId());
+
+				} else {
+					logger.debug("Content not found with id: " + id);
+					throwContentNotFoundException();
+				}
+			} else {
+				logger.debug("ParentFolder not found with id: " + parentFolderId);
+				throwParentFolderNotFoundException();
+			}
+		} finally {
+			if (lockId != null && !lockId.isEmpty()) {
+				try {
+					releaseLock(lockId,tenantId);
+				} catch (Exception e1) {
+					logger.debug(e1.getMessage(), e1);
+					logger.debug("Exception in releasing lock for id: " + lockId);// NOSONAR
+				}
+			}
+		}
+		return copiedContent;
+	}
+
+	public void handleCommitContent(String token, String storageId,String tenantId) throws CustomException, InterruptedException {
+		// Get the content by the token
+		Content content = contentDao.findByToken(token,tenantId);
+		int retryCount = 5;
+		while (content == null) {
+			Thread.sleep(100);
+			retryCount--;
+			content = contentDao.findByToken(token,tenantId);
+			if (retryCount <= 0)
+				break;
+		}
+		if (content == null) {
+			throwContentNotFoundException();
+		} else {
+			logger.debug("Content metadata to commit " + content.toString());
+
+			// Update the content location with the storageId and mark the flag as
+			// COMMITTED
+			Map<String, String> contentLocationUpdateParams = new HashMap<>();
+			contentLocationUpdateParams.put("locationId", storageId);
+			contentLocationUpdateParams.put("flag", "COMMITTED");
+			contentLocationService.update(content.getContentLocationId(), contentLocationUpdateParams, null,tenantId);
+
+			// Mark the content as committed and remove the token
+			//Map<String, String> updateContentParams = new HashMap<>();
+			JSONObject updateContentParams = new JSONObject();
+
+			updateContentParams.put("token", "");
+			updateContentParams.put("flag", "COMMITTED");
+			update(content.getId(), updateContentParams.toString(), null, true,tenantId);
+			logger.debug("Acknowledging Storage service");
+			// Acknowledge the storage service
+			acknowledgeStorageService(token,tenantId);
+		}
+	}
+
+	public void acknowledgeStorageService(String token,String tenantId) {
+		service.acknowledgeStorageService(token, tenantId);
+	}
+
+	public void handleContentRemovalOnFailure(String token, String storageId,String tenantId) throws CustomException {
+		// Find content location by storageId and remove it
+		contentLocationService.findAndDeleteByLocationId(storageId,tenantId);
+
+		// Find content and delete by token
+		contentDao.findAndDeleteByToken(token,tenantId);
+	}
+
+	public List<Content> searchMetadata(String allRequestParams, String tenantId) {
+		logger.debug("Searching for contents with : " + allRequestParams);
+		return contentDao.findAllContentsByMetadata(allRequestParams,tenantId);
+	}
+	
+}

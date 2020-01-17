@@ -1,0 +1,14 @@
+== Algorithms
+
+.	Create Content:
+*	Create Content core API
+
+.	Delete Content:
+*	Delete Content core API
+
+.	Get Contents:
+*	Get Contents core API
+
+.	Update Content Info:
+*	Update Content Info core API
+

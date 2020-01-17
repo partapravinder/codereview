@@ -1,0 +1,163 @@
+#
+# There is insufficient memory for the Java Runtime Environment to continue.
+# Native memory allocation (malloc) failed to allocate 1048576 bytes for AllocateHeap
+# Possible reasons:
+#   The system is out of physical RAM or swap space
+#   The process is running with CompressedOops enabled, and the Java Heap may be blocking the growth of the native heap
+# Possible solutions:
+#   Reduce memory load on the system
+#   Increase physical memory or swap space
+#   Check if swap backing store is full
+#   Decrease Java heap size (-Xmx/-Xms)
+#   Decrease number of Java threads
+#   Decrease Java thread stack sizes (-Xss)
+#   Set larger code cache with -XX:ReservedCodeCacheSize=
+#   JVM is running with Zero Based Compressed Oops mode in which the Java heap is
+#     placed in the first 32GB address space. The Java Heap base address is the
+#     maximum limit for the native heap growth. Please use -XX:HeapBaseMinAddress
+#     to set the Java Heap base and to place the Java Heap above 32GB virtual address.
+# This output file may be truncated or incomplete.
+#
+#  Out of Memory Error (memory/allocation.inline.hpp:61), pid=13104, tid=0x0000000000002894
+#
+# JRE version:  (8.0_231-b11) (build )
+# Java VM: Java HotSpot(TM) 64-Bit Server VM (25.231-b11 mixed mode windows-amd64 compressed oops)
+# Failed to write core dump. Minidumps are not enabled by default on client versions of Windows
+#
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x0000000002659000):  JavaThread "Unknown thread" [_thread_in_vm, id=10388, stack(0x00000000024a0000,0x00000000025a0000)]
+
+Stack: [0x00000000024a0000,0x00000000025a0000]
+[error occurred during error reporting (printing stack bounds), id 0xc0000005]
+
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+
+
+---------------  P R O C E S S  ---------------
+
+Java Threads: ( => current thread )
+
+Other Threads:
+
+=>0x0000000002659000 (exited) JavaThread "Unknown thread" [_thread_in_vm, id=10388, stack(0x00000000024a0000,0x00000000025a0000)]
+
+VM state:not at safepoint (normal execution)
+
+VM Mutex/Monitor currently owned by a thread: None
+
+heap address: 0x00000006c0000000, size: 4096 MB, Compressed Oops mode: Zero based, Oop shift amount: 3
+Narrow klass base: 0x0000000000000000, Narrow klass shift: 3
+Compressed class space size: 1073741824 Address: 0x00000007c0000000
+
+Heap:
+ PSYoungGen      total 76288K, used 1310K [0x000000076ab00000, 0x0000000770000000, 0x00000007c0000000)
+  eden space 65536K, 2% used [0x000000076ab00000,0x000000076ac47af0,0x000000076eb00000)
+  from space 10752K, 0% used [0x000000076f580000,0x000000076f580000,0x0000000770000000)
+  to   space 10752K, 0% used [0x000000076eb00000,0x000000076eb00000,0x000000076f580000)
+ ParOldGen       total 175104K, used 0K [0x00000006c0000000, 0x00000006cab00000, 0x000000076ab00000)
+  object space 175104K, 0% used [0x00000006c0000000,0x00000006c0000000,0x00000006cab00000)
+ Metaspace       used 752K, capacity 4480K, committed 4480K, reserved 1056768K
+  class space    used 76K, capacity 384K, committed 384K, reserved 1048576K
+
+Card table byte_map: [0x0000000011b10000,0x0000000012320000] byte_map_base: 0x000000000e510000
+
+Marking Bits: (ParMarkBitMap*) 0x0000000054456d90
+ Begin Bits: [0x0000000012a80000, 0x0000000016a80000)
+ End Bits:   [0x0000000016a80000, 0x000000001aa80000)
+
+Polling page: 0x00000000008d0000
+
+CodeCache: size=245760Kb used=328Kb max_used=328Kb free=245431Kb
+ bounds [0x0000000002750000, 0x00000000029c0000, 0x0000000011750000]
+ total_blobs=57 nmethods=0 adapters=38
+ compilation: enabled
+
+Compilation events (0 events):
+No events
+
+GC Heap History (0 events):
+No events
+
+Deoptimization events (0 events):
+No events
+
+Classes redefined (0 events):
+No events
+
+Internal exceptions (0 events):
+No events
+
+Events (10 events):
+Event: 0.099 loading class java/lang/Short
+Event: 0.099 loading class java/lang/Short done
+Event: 0.099 loading class java/lang/Integer
+Event: 0.099 loading class java/lang/Integer done
+Event: 0.099 loading class java/lang/Long
+Event: 0.099 loading class java/lang/Long done
+Event: 0.281 loading class java/lang/NullPointerException
+Event: 0.281 loading class java/lang/NullPointerException done
+Event: 0.281 loading class java/lang/ArithmeticException
+Event: 0.281 loading class java/lang/ArithmeticException done
+
+
+Dynamic libraries:
+0x00007ff62c340000 - 0x00007ff62c377000 	C:\Program Files\Java\jre1.8.0_231\bin\java.exe
+0x00007ff933aa0000 - 0x00007ff933c90000 	C:\windows\SYSTEM32\ntdll.dll
+0x00007ff932cb0000 - 0x00007ff932d62000 	C:\windows\System32\KERNEL32.DLL
+0x00007ff9315d0000 - 0x00007ff931873000 	C:\windows\System32\KERNELBASE.dll
+0x00007ff931be0000 - 0x00007ff931c83000 	C:\windows\System32\ADVAPI32.dll
+0x00007ff932ae0000 - 0x00007ff932b7e000 	C:\windows\System32\msvcrt.dll
+0x00007ff932d70000 - 0x00007ff932e07000 	C:\windows\System32\sechost.dll
+0x00007ff9330a0000 - 0x00007ff9331c0000 	C:\windows\System32\RPCRT4.dll
+0x00007ff932090000 - 0x00007ff932224000 	C:\windows\System32\USER32.dll
+0x00007ff9314a0000 - 0x00007ff9314c1000 	C:\windows\System32\win32u.dll
+0x00007ff9322a0000 - 0x00007ff9322c6000 	C:\windows\System32\GDI32.dll
+0x00007ff931300000 - 0x00007ff931494000 	C:\windows\System32\gdi32full.dll
+0x00007ff931880000 - 0x00007ff93191e000 	C:\windows\System32\msvcp_win.dll
+0x00007ff9314d0000 - 0x00007ff9315ca000 	C:\windows\System32\ucrtbase.dll
+0x00007ff91dd30000 - 0x00007ff91dfb5000 	C:\windows\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.18362.535_none_e6c3b34713100821\COMCTL32.dll
+0x00007ff931c90000 - 0x00007ff931fc6000 	C:\windows\System32\combase.dll
+0x00007ff9319a0000 - 0x00007ff931a20000 	C:\windows\System32\bcryptPrimitives.dll
+0x00007ff931ff0000 - 0x00007ff93201e000 	C:\windows\System32\IMM32.DLL
+0x0000000053b50000 - 0x0000000053c22000 	C:\Program Files\Java\jre1.8.0_231\bin\msvcr100.dll
+0x0000000053c30000 - 0x00000000544d6000 	C:\Program Files\Java\jre1.8.0_231\bin\server\jvm.dll
+0x00007ff932850000 - 0x00007ff932858000 	C:\windows\System32\PSAPI.DLL
+0x00007ff929880000 - 0x00007ff929889000 	C:\windows\SYSTEM32\WSOCK32.dll
+0x00007ff932230000 - 0x00007ff93229f000 	C:\windows\System32\WS2_32.dll
+0x00007ff92e530000 - 0x00007ff92e554000 	C:\windows\SYSTEM32\WINMM.dll
+0x00007ff928c50000 - 0x00007ff928c5a000 	C:\windows\SYSTEM32\VERSION.dll
+0x00007ff92e500000 - 0x00007ff92e52d000 	C:\windows\SYSTEM32\WINMMBASE.dll
+0x00007ff931950000 - 0x00007ff93199a000 	C:\windows\System32\cfgmgr32.dll
+0x00007ff929870000 - 0x00007ff92987f000 	C:\Program Files\Java\jre1.8.0_231\bin\verify.dll
+0x00007ff921ed0000 - 0x00007ff921ef9000 	C:\Program Files\Java\jre1.8.0_231\bin\java.dll
+0x00007ff921eb0000 - 0x00007ff921ec6000 	C:\Program Files\Java\jre1.8.0_231\bin\zip.dll
+
+VM Arguments:
+java_command: org.openjdk.jol.vm.sa.SenseAccessMain
+java_class_path (initial): C:/installer/workspace-2019-12/folder_service/bin/main;C:/Users/azureadmin/.gradle/caches/modules-2/files-2.1/org.springframework/spring-aspects/5.0.9.RELEASE/dfb2da4c573391d8e8a482f08bdf4d38398e2bb0/spring-aspects-5.0.9.RELEASE.jar;C:/Users/azureadmin/.gradle/caches/modules-2/files-2.1/com.google.code.gson/gson/2.8.5/f645ed69d595b24d4cf8b3fbb64cc505bede8829/gson-2.8.5.jar;C:/Users/azureadmin/.gradle/caches/modules-2/files-2.1/joda-time/joda-time/2.3/56498efd17752898cfcc3868c1b6211a07b12b8f/joda-time-2.3.jar;C:/Users/azureadmin/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-web/2.0.5.RELEASE/52daa1f1509bd637a737206e54c06a17aabb9504/spring-boot-starter-web-2.0.5.RELEASE.jar;C:/Users/azureadmin/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-devtools/2.0.5.RELEASE/9bd89be8e5d96477f8dd846fea4ced5954031d89/spring-boot-devtools-2.0.5.RELEASE.jar;C:/Users/azureadmin/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-data-mongodb/2.0.5.RELEASE/cabe02c0caadeb6ee84eff3b63f05ae3bd7cbeab/spring-boot-starter-data-mongodb-2.0.5.RELEASE.jar;C:/Users/azureadmin/.gradle/caches/modules-2/files-2.1/org.springframework.security/spring-security-web/5.0.8.RELEASE/87b45329699c294ccd6df2507a1f703eca89e381/spring-security-web-5.0.8.RELEASE.jar;C:/Users/azureadmin/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-actuator/2.0.5.RELEASE/d5153c71f55aa39593fb6295790aad7cd81ef296/spring-boot-starter-actuator-2.0.5.RELEASE.jar;C:/Users/azureadmin/.gradle/caches/modules-2/files-2.1/org.json/json/20180813/8566b2b0391d9d4479ea225645c6ed47ef17fe41/json-20180813.jar;C:/Users/azureadmin/.gradle/caches/modules-2/files-2.1/org.springframework.data/spring-data-redis/2.0.10.RELEASE/bcfe73fc0b07e11cbdbe7c6c1793050f84669306/spring-data-redis-2.0.10.RELEASE.jar;C:/Users/azureadmin/.gradle/caches/modules-2/files-2.1/com.microsoft.windowsazure/microsoft-windowsazure-a
+Launcher Type: SUN_STANDARD
+
+Environment Variables:
+PATH=C:/Program Files/Java/jre1.8.0_231/bin/server;C:/Program Files/Java/jre1.8.0_231/bin;C:/Program Files/Java/jre1.8.0_231/lib/amd64;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\ProgramData\DockerDesktop\version-bin;C:\Program Files\Docker\Docker\Resources\bin;C:\windows\system32;C:\windows;C:\windows\System32\Wbem;C:\windows\System32\WindowsPowerShell\v1.0\;C:\windows\System32\OpenSSH\;C:\Users\azureadmin\AppData\Local\Microsoft\WindowsApps;;C:\installer\eclipse-jee-2019-12-R-win32-x86_64\eclipse;
+USERNAME=azureadmin
+OS=Windows_NT
+PROCESSOR_IDENTIFIER=Intel64 Family 6 Model 79 Stepping 1, GenuineIntel
+
+
+
+---------------  S Y S T E M  ---------------
+
+OS: Windows 10.0 , 64 bit Build 18362 (10.0.18362.329)
+
+CPU:total 2 (initial active 2) (1 cores per cpu, 2 threads per core) family 6 model 79 stepping 1, cmov, cx8, fxsr, mmx, sse, sse2, sse3, ssse3, sse4.1, sse4.2, popcnt, avx, avx2, aes, clmul, erms, rtm, 3dnowpref, lzcnt, ht, tsc, bmi1, bmi2, adx
+
+Memory: 4k page, physical 16776756k(8089252k free), swap 20970920k(476k free)
+
+vm_info: Java HotSpot(TM) 64-Bit Server VM (25.231-b11) for windows-amd64 JRE (1.8.0_231-b11), built on Oct  5 2019 03:11:30 by "java_re" with MS VC++ 10.0 (VS2010)
+
+time: Mon Jan 13 14:39:13 2020
+timezone: Coordinated Universal Time
+elapsed time: 0 seconds (0d 0h 0m 0s)
+

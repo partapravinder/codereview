@@ -1,0 +1,9 @@
+== Folder Service
+
+Library service which exposes all endpoints to manage folders for ECM.
+
+=== Operations
+
+Operations supported are add, update, delete and fetch.
+
+
