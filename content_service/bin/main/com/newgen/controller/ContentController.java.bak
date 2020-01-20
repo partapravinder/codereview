@@ -1,0 +1,282 @@
+package com.newgen.controller;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.newgen.exception.CustomException;
+import com.newgen.model.Content;
+import com.newgen.model.DownloadUrlResponse;
+import com.newgen.model.StorageProcess;
+import com.newgen.model.ValidationError;
+import com.newgen.validation.ValidationErrorBuilder;
+import com.newgen.wrapper.service.WrapperService;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
+@RestController
+@RequestMapping("/contents")
+@Api(value = "Content", description = "Operations for Contents")
+public class ContentController extends ExceptionThrower {
+	private static final Logger logger = LoggerFactory.getLogger(ContentController.class);
+
+	@Value("${metadata.service.url}")
+	private String metadataUrl;
+
+	@Value("${storage.service.url}")
+	private String storageUrl;
+
+	@Autowired
+	private WrapperService wrapperService;
+
+	// Save the uploaded file to this folder
+	@Value("${upload.folder}")
+	private String UPLOADED_FOLDER;
+
+	@RequestMapping(method = RequestMethod.POST, produces = APPLICATION_JSON_VALUE)
+	@ApiOperation(value = "Create content", produces = APPLICATION_JSON_VALUE)
+	@ResponseStatus(code = HttpStatus.CREATED)
+	@ApiResponses(value = { @ApiResponse(code = 201, message = "Content created", response = Content.class),
+			@ApiResponse(code = 500, message = "Internal Server Error"),
+			@ApiResponse(code = 423, message = "Lock Already exists."),
+			@ApiResponse(code = 503, message = "Database connection failure"),
+			@ApiResponse(code = 400, message = "Exception Message") })
+	public ResponseEntity<String> uploadContent(@RequestParam("file") MultipartFile file,
+			@RequestParam("name") String name, @RequestParam("contentType") String contentType,
+			@RequestParam(value = "comments", required = false) String comments,
+			@RequestParam(value = "parentFolderId") String parentFolderId,
+			@RequestParam(value = "ownerName") String ownerName, @RequestParam(value = "ownerId") String ownerId,
+			@RequestParam(value = "storageCredentialId") String storageCredentialId)
+			throws CustomException, JsonProcessingException, InterruptedException {
+		logger.debug("Entering uploadContent()");
+		ResponseEntity<String> response = null;
+		// Check if the file is empty or not
+		if (file.isEmpty()) {
+			throwFileEmptyException();
+		} else {
+			try {
+				// Get the file and save it in temp folder
+				byte[] bytes = file.getBytes();
+
+				String uploadPath = UPLOADED_FOLDER + file.getOriginalFilename();
+				Path path = Paths.get(uploadPath);
+				Files.write(path, bytes);
+
+				response = wrapperService.uploadStoreContent(file, name, contentType, comments, parentFolderId,
+						ownerName, ownerId, storageCredentialId, uploadPath);
+
+				if (response.getStatusCode() == HttpStatus.CREATED) {
+					// Set the token
+					JSONObject jsonObj = new JSONObject(response.getBody());
+					String token = jsonObj.get("token").toString();
+					logger.debug("[Token " + token + "] Content uploaded to cloud, about to create content metadata");
+					response = wrapperService.uploadMetaContent(file, name, contentType, comments, parentFolderId,
+							ownerName, ownerId, storageCredentialId, token);
+					// Send the response as an output
+					if (response.getStatusCode() == HttpStatus.CREATED) {
+						logger.debug("[Token " + token + "] Content metadata created " + response.getBody());
+						jsonObj = new JSONObject(response.getBody());
+						String contentId = jsonObj.get("id").toString();
+
+						JSONObject responseJsonObject = new JSONObject();
+						responseJsonObject.put("id", contentId);
+						responseJsonObject.put("status", "PENDING");
+						logger.debug("[Token " + token + "] Response for upload content api "
+								+ responseJsonObject.toString());
+						return new ResponseEntity<>(responseJsonObject.toString(), response.getStatusCode());
+					}
+				} else {
+					throwContentUploadFailed();
+				}
+			} catch (IOException e) {
+				logger.debug(e.getMessage(), e);
+				throwFileStoreException();
+			}
+			logger.debug("Exit uploadContent()");
+		}
+		if(response == null){
+			return new ResponseEntity<>("Failed to upload Content", HttpStatus.BAD_REQUEST);
+		}else{
+			return new ResponseEntity<>(response.getBody(), response.getStatusCode());
+		}
+				
+	}
+
+	@ExceptionHandler
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
+	public ValidationError handleException(MethodArgumentNotValidException exception) {
+		return createValidationError(exception);
+	}
+
+	private ValidationError createValidationError(MethodArgumentNotValidException exception) {
+		return ValidationErrorBuilder.fromBindingErrors(exception.getBindingResult());
+	}
+
+	@RequestMapping(method = RequestMethod.DELETE, value = "/{id}")
+	@ApiOperation(value = "Delete a content")
+	@ApiResponses(value = { @ApiResponse(code = 204, message = "Content deleted"),
+			@ApiResponse(code = 500, message = "Internal Server Error"),
+			@ApiResponse(code = 423, message = "Lock Already exists."),
+			@ApiResponse(code = 503, message = "Database connection failure") })
+	public ResponseEntity<String> deleteContent(@PathVariable("id") String id,
+			@RequestParam(value = "version", required = false) String version) {
+		logger.debug("Entering deleteContent()");
+		logger.debug("Content to delete: " + id);
+		ResponseEntity<String> response = wrapperService.deleteContent(id, version);
+
+		String responseBody = "";
+		if (response.getBody() != null) {
+			responseBody = response.getBody();
+		}
+		logger.debug("Delete response: " + response.getStatusCode() + " " + responseBody);
+		logger.debug("Exit deleteContent()");
+		return new ResponseEntity<>(responseBody, response.getStatusCode());
+	}
+
+	@RequestMapping(method = RequestMethod.GET, produces = APPLICATION_JSON_VALUE)
+	@ApiOperation(value = "Searching for Content")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Contents found", response = Content.class, responseContainer = "List"),
+			@ApiResponse(code = 500, message = "Internal Server Error"),
+			@ApiResponse(code = 503, message = "Database connection failure") })
+	public ResponseEntity<String> searchContents(HttpServletRequest request) {
+		logger.debug("Entering searchContents()");
+		ResponseEntity<String> response = wrapperService.searchContents(request);
+		logger.debug("Exit searchContents()");
+		return new ResponseEntity<>(response.getBody(), response.getStatusCode());
+	}
+
+	@RequestMapping(method = RequestMethod.PUT, value = "/{id}", produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
+	@ApiOperation(value = "Update Content Info")
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "Content updated", response = Content.class),
+			@ApiResponse(code = 500, message = "Internal Server Error"),
+			@ApiResponse(code = 423, message = "Lock Already exists"),
+			@ApiResponse(code = 503, message = "Database connection failure") })
+	public ResponseEntity<String> updateContentInfo(@RequestBody String updateContentParams,
+			@PathVariable("id") String id, @RequestParam(value = "version", required = false) Long version) {
+		logger.debug("Entering updateContentInfo()");
+		ResponseEntity<String> response = wrapperService.updateContentInfo(updateContentParams, id, version);
+		logger.debug("Exit updateContentInfo()");
+		return new ResponseEntity<>(response.getBody(), response.getStatusCode());
+	}
+
+	@RequestMapping(method = RequestMethod.POST, value = "/{id}", params = "parentFolderId", produces = APPLICATION_JSON_VALUE)
+	@ApiOperation(value = "Copy Content")
+	@ResponseStatus(code = HttpStatus.OK)
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "Content copied", response = Content.class),
+			@ApiResponse(code = 500, message = "Internal Server Error"),
+			@ApiResponse(code = 423, message = "Lock Already exists."),
+			@ApiResponse(code = 503, message = "Database connection failure"),
+			@ApiResponse(code = 400, message = "Exception Message") })
+	public ResponseEntity<String> copyContent(@RequestParam("parentFolderId") String parentFolderId,
+			@PathVariable("id") String id) {
+		logger.debug("Entering copyContent()");
+		ResponseEntity<String> response = wrapperService.copyContent(parentFolderId, id);
+		logger.debug("Exit copyContent()");
+		return new ResponseEntity<>(response.getBody(), response.getStatusCode());
+	}
+
+	@RequestMapping(method = RequestMethod.POST, value = "/move/{id}/{targetFolderId}", produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
+	@ApiOperation(value = "Move Content")
+	@ResponseStatus(code = HttpStatus.OK)
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "Content moved", response = Content.class),
+			@ApiResponse(code = 500, message = "Internal Server Error"),
+			@ApiResponse(code = 423, message = "Lock Already exists."),
+			@ApiResponse(code = 503, message = "Database connection failure"),
+			@ApiResponse(code = 400, message = "Exception Message") })
+	public ResponseEntity<String> moveContent(@PathVariable("id") String id,
+			@PathVariable("targetFolderId") String targetFolderId,
+			@RequestParam(value = "version", required = false) Long version) {
+		logger.debug("Entering moveContent()");
+		ResponseEntity<String> response = wrapperService.moveContent(id, targetFolderId, version);
+		logger.debug("Exit moveContent()");
+		return new ResponseEntity<>(response.getBody(), response.getStatusCode());
+	}
+
+	@RequestMapping(method = RequestMethod.GET, value = "/status", produces = APPLICATION_JSON_VALUE)
+	@ApiOperation(value = "Get Content Status", produces = APPLICATION_JSON_VALUE)
+	@ResponseStatus(code = HttpStatus.OK)
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "Get Content Status", response = StorageProcess.class),
+			@ApiResponse(code = 500, message = "Internal Server Error"),
+			@ApiResponse(code = 503, message = "Database connection failure"),
+			@ApiResponse(code = 400, message = "Exception Message") })
+	public ResponseEntity<String> contentStatus(@RequestParam(value = "id", required = true) String id) {
+		logger.debug("Entering contentStatus()");
+		ResponseEntity<String> response = wrapperService.contentStatus(id);
+		if (response.getStatusCode() == HttpStatus.OK) {
+			JSONArray jsonArr = new JSONArray(response.getBody());
+			JSONObject jsonObj = (JSONObject) jsonArr.get(0);
+			if ("uncommitted".equalsIgnoreCase(jsonObj.get("flag").toString()) && jsonObj.get("token") != null
+					&& !jsonObj.get("token").toString().isEmpty()) {
+				String token = jsonObj.get("token").toString();
+				// Send the token to the storage service to fetch the status
+				String status = getContentUploadStatus(token);
+				JSONObject obj = new JSONObject();
+				obj.put("status", status);
+				return new ResponseEntity<String>(obj.toString(), HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(jsonObj.toString(), response.getStatusCode());
+			}
+		}
+		logger.debug("Exit contentStatus()");
+		return new ResponseEntity<>(response.getBody(), response.getStatusCode());
+	}
+
+	public String getContentUploadStatus(String token) {
+		logger.debug("Entering getContentUploadStatus()");
+		if (token != null && !token.isEmpty()) {
+			ResponseEntity<String> response = wrapperService.getContentUploadStatus(token);
+
+			if (response.getStatusCode() == HttpStatus.OK) {
+				JSONObject jsonObj = new JSONObject(response.getBody());
+				return jsonObj.get("status").toString();
+			}
+		}
+		logger.debug("Exit getContentUploadStatus()");
+		return null;
+	}
+
+	@RequestMapping(method = RequestMethod.GET, value = "/retrieve/{id}", produces = APPLICATION_JSON_VALUE)
+	@ApiOperation(value = "Retrieve Content", produces = APPLICATION_JSON_VALUE)
+	@ResponseStatus(code = HttpStatus.OK)
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Retrieve Content", response = DownloadUrlResponse.class),
+			@ApiResponse(code = 500, message = "Internal Server Error"),
+			@ApiResponse(code = 503, message = "Database connection failure"),
+			@ApiResponse(code = 400, message = "Exception Message") })
+	public ResponseEntity<String> retrieveContent(@PathVariable("id") String id) throws CustomException {
+		logger.debug("Entering retrieveContent()");
+		ResponseEntity<String> response = wrapperService.retrieveContent(id);
+		logger.debug("Exit retrieveContent()");
+		return new ResponseEntity<>(response.getBody(), response.getStatusCode());
+	}
+
+}

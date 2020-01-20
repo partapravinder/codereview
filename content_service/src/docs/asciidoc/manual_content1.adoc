@@ -1,0 +1,9 @@
+== Content Service
+
+Library service which exposes all endpoints to manage contents for ECM.
+
+=== Operations
+
+Operations supported are add, update, delete and fetch.
+
+

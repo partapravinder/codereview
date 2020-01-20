@@ -1,0 +1,212 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  EXCEPTION_ACCESS_VIOLATION (0xc0000005) at pc=0x0000000053e45087, pid=5840, tid=0x0000000000002d3c
+#
+# JRE version:  (8.0_231-b11) (build )
+# Java VM: Java HotSpot(TM) 64-Bit Server VM (25.231-b11 mixed mode windows-amd64 compressed oops)
+# Problematic frame:
+# V  [jvm.dll+0x215087]
+#
+# Failed to write core dump. Minidumps are not enabled by default on client versions of Windows
+#
+# If you would like to submit a bug report, please visit:
+#   http://bugreport.java.com/bugreport/crash.jsp
+#
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x0000000002ce9000):  JavaThread "main" [_thread_in_vm, id=11580, stack(0x0000000002bc0000,0x0000000002cc0000)]
+
+siginfo: ExceptionCode=0xc0000005, writing address 0x0000000002cb8680
+
+Registers:
+RAX=0x0000000002cb8680, RBX=0x0000000000000007, RCX=0x0000000000006000, RDX=0x0000000000000009
+RSP=0x0000000002cbe680, RBP=0x0000000000000000, RSI=0x0000000002cbe680, RDI=0x0000000000000007
+R8 =0x0000000000000009, R9 =0x0000000002cd7b90, R10=0x000000001b933978, R11=0x0000000002bca140
+R12=0x0000000002cd7b90, R13=0x0000000002ce9000, R14=0x0000000002cbe7b0, R15=0x000000001b933978
+RIP=0x0000000053e45087, EFLAGS=0x0000000000010202
+
+Top of Stack: (sp=0x0000000002cbe680)
+0x0000000002cbe680:   0000000002ce94f0 0000000002ce9000
+0x0000000002cbe690:   0000000002ce9000 0000000002cd7b90
+0x0000000002cbe6a0:   00000000ffffffff 0000000053e45fb7
+0x0000000002cbe6b0:   0000000002cbe7b0 000000001b933978
+0x0000000002cbe6c0:   0000000002ce9000 0000000053d58d8c
+0x0000000002cbe6d0:   0000000000000000 0000000000000005
+0x0000000002cbe6e0:   00000007c0000f28 000000001b932048
+0x0000000002cbe6f0:   000000001b933978 0000000002ce9000
+0x0000000002cbe700:   0000000002df3920 0000000000000000
+0x0000000002cbe710:   0000000000000007 0000000002ce95a0
+0x0000000002cbe720:   0000000000000028 0000000000000005
+0x0000000002cbe730:   0000000002ce9580 000000001b933978
+0x0000000002cbe740:   0000000002ce9000 00000007c0003aa0
+0x0000000002cbe750:   0000000002ce9000 0000000000000005
+0x0000000002cbe760:   0000000002cbe8f8 0000000053d5e801
+0x0000000002cbe770:   0000000002ce9000 000000001b932618 
+
+Instructions: (pc=0x0000000053e45087)
+0x0000000053e45067:   48 89 6c 24 30 33 ed 66 90 e8 8b 5c 08 00 ff c3
+0x0000000053e45077:   48 63 c8 48 8b c6 48 0f af cf 48 ff c7 48 2b c1
+0x0000000053e45087:   89 28 48 63 c3 48 3b 05 15 b8 59 00 7e db 48 8b
+0x0000000053e45097:   6c 24 30 48 8b 5c 24 38 48 8b 74 24 40 48 83 c4 
+
+
+Register to memory mapping:
+
+RAX=0x0000000002cb8680 is pointing into the stack for thread: 0x0000000002ce9000
+RBX=0x0000000000000007 is an unknown value
+RCX=0x0000000000006000 is an unknown value
+RDX=0x0000000000000009 is an unknown value
+RSP=0x0000000002cbe680 is pointing into the stack for thread: 0x0000000002ce9000
+RBP=0x0000000000000000 is an unknown value
+RSI=0x0000000002cbe680 is pointing into the stack for thread: 0x0000000002ce9000
+RDI=0x0000000000000007 is an unknown value
+R8 =0x0000000000000009 is an unknown value
+R9 =0x0000000002cd7b90 is an unknown value
+R10={method} {0x000000001b933980} '<clinit>' '()V' in 'java/security/AccessControlContext'
+R11=0x0000000002bca140 is pointing into the stack for thread: 0x0000000002ce9000
+R12=0x0000000002cd7b90 is an unknown value
+R13=0x0000000002ce9000 is a thread
+R14=0x0000000002cbe7b0 is pointing into the stack for thread: 0x0000000002ce9000
+R15={method} {0x000000001b933980} '<clinit>' '()V' in 'java/security/AccessControlContext'
+
+
+Stack: [0x0000000002bc0000,0x0000000002cc0000],  sp=0x0000000002cbe680,  free space=1017k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+
+Java frames: (J=compiled Java code, j=interpreted, Vv=VM code)
+j  java.security.AccessController.getStackAccessControlContext()Ljava/security/AccessControlContext;+0
+j  java.security.AccessController.getContext()Ljava/security/AccessControlContext;+0
+j  java.lang.Thread.init(Ljava/lang/ThreadGroup;Ljava/lang/Runnable;Ljava/lang/String;JLjava/security/AccessControlContext;Z)V+156
+j  java.lang.Thread.init(Ljava/lang/ThreadGroup;Ljava/lang/Runnable;Ljava/lang/String;J)V+8
+j  java.lang.Thread.<init>(Ljava/lang/ThreadGroup;Ljava/lang/String;)V+45
+v  ~StubRoutines::call_stub
+
+---------------  P R O C E S S  ---------------
+
+Java Threads: ( => current thread )
+=>0x0000000002ce9000 JavaThread "main" [_thread_in_vm, id=11580, stack(0x0000000002bc0000,0x0000000002cc0000)]
+
+Other Threads:
+  0x000000001c237000 VMThread [stack: 0x000000001ccb0000,0x000000001cdb0000] [id=6868]
+
+VM state:not at safepoint (normal execution)
+
+VM Mutex/Monitor currently owned by a thread: None
+
+heap address: 0x00000006c0000000, size: 4096 MB, Compressed Oops mode: Zero based, Oop shift amount: 3
+Narrow klass base: 0x0000000000000000, Narrow klass shift: 3
+Compressed class space size: 1073741824 Address: 0x00000007c0000000
+
+Heap:
+ PSYoungGen      total 76288K, used 1310K [0x000000076ab00000, 0x0000000770000000, 0x00000007c0000000)
+  eden space 65536K, 2% used [0x000000076ab00000,0x000000076ac47af0,0x000000076eb00000)
+  from space 10752K, 0% used [0x000000076f580000,0x000000076f580000,0x0000000770000000)
+  to   space 10752K, 0% used [0x000000076eb00000,0x000000076eb00000,0x000000076f580000)
+ ParOldGen       total 175104K, used 0K [0x00000006c0000000, 0x00000006cab00000, 0x000000076ab00000)
+  object space 175104K, 0% used [0x00000006c0000000,0x00000006c0000000,0x00000006cab00000)
+ Metaspace       used 804K, capacity 4480K, committed 4480K, reserved 1056768K
+  class space    used 83K, capacity 384K, committed 384K, reserved 1048576K
+
+Card table byte_map: [0x00000000121a0000,0x00000000129b0000] byte_map_base: 0x000000000eba0000
+
+Marking Bits: (ParMarkBitMap*) 0x0000000054456d90
+ Begin Bits: [0x0000000013110000, 0x0000000017110000)
+ End Bits:   [0x0000000017110000, 0x000000001b110000)
+
+Polling page: 0x0000000001240000
+
+CodeCache: size=245760Kb used=392Kb max_used=392Kb free=245367Kb
+ bounds [0x0000000002de0000, 0x0000000003050000, 0x0000000011de0000]
+ total_blobs=77 nmethods=0 adapters=52
+ compilation: enabled
+
+Compilation events (0 events):
+No events
+
+GC Heap History (0 events):
+No events
+
+Deoptimization events (0 events):
+No events
+
+Classes redefined (0 events):
+No events
+
+Internal exceptions (0 events):
+No events
+
+Events (10 events):
+Event: 1.465 loading class java/lang/RuntimePermission
+Event: 1.465 loading class java/security/BasicPermission
+Event: 1.465 loading class java/security/Permission
+Event: 1.465 loading class java/security/Guard
+Event: 1.465 loading class java/security/Guard done
+Event: 1.465 loading class java/security/Permission done
+Event: 1.465 loading class java/security/BasicPermission done
+Event: 1.465 loading class java/lang/RuntimePermission done
+Event: 1.465 loading class java/security/AccessController
+Event: 1.465 loading class java/security/AccessController done
+
+
+Dynamic libraries:
+0x00007ff62c340000 - 0x00007ff62c377000 	C:\Program Files\Java\jre1.8.0_231\bin\java.exe
+0x00007ff933aa0000 - 0x00007ff933c90000 	C:\windows\SYSTEM32\ntdll.dll
+0x00007ff932cb0000 - 0x00007ff932d62000 	C:\windows\System32\KERNEL32.DLL
+0x00007ff9315d0000 - 0x00007ff931873000 	C:\windows\System32\KERNELBASE.dll
+0x00007ff931be0000 - 0x00007ff931c83000 	C:\windows\System32\ADVAPI32.dll
+0x00007ff932ae0000 - 0x00007ff932b7e000 	C:\windows\System32\msvcrt.dll
+0x00007ff932d70000 - 0x00007ff932e07000 	C:\windows\System32\sechost.dll
+0x00007ff9330a0000 - 0x00007ff9331c0000 	C:\windows\System32\RPCRT4.dll
+0x00007ff932090000 - 0x00007ff932224000 	C:\windows\System32\USER32.dll
+0x00007ff9314a0000 - 0x00007ff9314c1000 	C:\windows\System32\win32u.dll
+0x00007ff9322a0000 - 0x00007ff9322c6000 	C:\windows\System32\GDI32.dll
+0x00007ff931300000 - 0x00007ff931494000 	C:\windows\System32\gdi32full.dll
+0x00007ff931880000 - 0x00007ff93191e000 	C:\windows\System32\msvcp_win.dll
+0x00007ff9314d0000 - 0x00007ff9315ca000 	C:\windows\System32\ucrtbase.dll
+0x00007ff91dd30000 - 0x00007ff91dfb5000 	C:\windows\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.18362.535_none_e6c3b34713100821\COMCTL32.dll
+0x00007ff931c90000 - 0x00007ff931fc6000 	C:\windows\System32\combase.dll
+0x00007ff9319a0000 - 0x00007ff931a20000 	C:\windows\System32\bcryptPrimitives.dll
+0x00007ff931ff0000 - 0x00007ff93201e000 	C:\windows\System32\IMM32.DLL
+0x0000000053b50000 - 0x0000000053c22000 	C:\Program Files\Java\jre1.8.0_231\bin\msvcr100.dll
+0x0000000053c30000 - 0x00000000544d6000 	C:\Program Files\Java\jre1.8.0_231\bin\server\jvm.dll
+0x00007ff932850000 - 0x00007ff932858000 	C:\windows\System32\PSAPI.DLL
+0x00007ff929880000 - 0x00007ff929889000 	C:\windows\SYSTEM32\WSOCK32.dll
+0x00007ff932230000 - 0x00007ff93229f000 	C:\windows\System32\WS2_32.dll
+0x00007ff92e530000 - 0x00007ff92e554000 	C:\windows\SYSTEM32\WINMM.dll
+0x00007ff928c50000 - 0x00007ff928c5a000 	C:\windows\SYSTEM32\VERSION.dll
+0x00007ff92e500000 - 0x00007ff92e52d000 	C:\windows\SYSTEM32\WINMMBASE.dll
+0x00007ff931950000 - 0x00007ff93199a000 	C:\windows\System32\cfgmgr32.dll
+0x00007ff929870000 - 0x00007ff92987f000 	C:\Program Files\Java\jre1.8.0_231\bin\verify.dll
+0x00007ff921ed0000 - 0x00007ff921ef9000 	C:\Program Files\Java\jre1.8.0_231\bin\java.dll
+0x00007ff921eb0000 - 0x00007ff921ec6000 	C:\Program Files\Java\jre1.8.0_231\bin\zip.dll
+0x00007ff929f60000 - 0x00007ff92a154000 	C:\windows\SYSTEM32\dbghelp.dll
+
+VM Arguments:
+java_command: org.openjdk.jol.vm.sa.SenseAccessMain
+java_class_path (initial): C:/installer/workspace-2019-12/folder_service/bin/main;C:/Users/azureadmin/.gradle/caches/modules-2/files-2.1/org.springframework/spring-aspects/5.0.9.RELEASE/dfb2da4c573391d8e8a482f08bdf4d38398e2bb0/spring-aspects-5.0.9.RELEASE.jar;C:/Users/azureadmin/.gradle/caches/modules-2/files-2.1/com.google.code.gson/gson/2.8.5/f645ed69d595b24d4cf8b3fbb64cc505bede8829/gson-2.8.5.jar;C:/Users/azureadmin/.gradle/caches/modules-2/files-2.1/joda-time/joda-time/2.3/56498efd17752898cfcc3868c1b6211a07b12b8f/joda-time-2.3.jar;C:/Users/azureadmin/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-web/2.0.5.RELEASE/52daa1f1509bd637a737206e54c06a17aabb9504/spring-boot-starter-web-2.0.5.RELEASE.jar;C:/Users/azureadmin/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-devtools/2.0.5.RELEASE/9bd89be8e5d96477f8dd846fea4ced5954031d89/spring-boot-devtools-2.0.5.RELEASE.jar;C:/Users/azureadmin/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-data-mongodb/2.0.5.RELEASE/cabe02c0caadeb6ee84eff3b63f05ae3bd7cbeab/spring-boot-starter-data-mongodb-2.0.5.RELEASE.jar;C:/Users/azureadmin/.gradle/caches/modules-2/files-2.1/org.springframework.security/spring-security-web/5.0.8.RELEASE/87b45329699c294ccd6df2507a1f703eca89e381/spring-security-web-5.0.8.RELEASE.jar;C:/Users/azureadmin/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-actuator/2.0.5.RELEASE/d5153c71f55aa39593fb6295790aad7cd81ef296/spring-boot-starter-actuator-2.0.5.RELEASE.jar;C:/Users/azureadmin/.gradle/caches/modules-2/files-2.1/org.json/json/20180813/8566b2b0391d9d4479ea225645c6ed47ef17fe41/json-20180813.jar;C:/Users/azureadmin/.gradle/caches/modules-2/files-2.1/org.springframework.data/spring-data-redis/2.0.10.RELEASE/bcfe73fc0b07e11cbdbe7c6c1793050f84669306/spring-data-redis-2.0.10.RELEASE.jar;C:/Users/azureadmin/.gradle/caches/modules-2/files-2.1/com.microsoft.windowsazure/microsoft-windowsazure-a
+Launcher Type: SUN_STANDARD
+
+Environment Variables:
+PATH=C:/Program Files/Java/jre1.8.0_231/bin/server;C:/Program Files/Java/jre1.8.0_231/bin;C:/Program Files/Java/jre1.8.0_231/lib/amd64;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\ProgramData\DockerDesktop\version-bin;C:\Program Files\Docker\Docker\Resources\bin;C:\windows\system32;C:\windows;C:\windows\System32\Wbem;C:\windows\System32\WindowsPowerShell\v1.0\;C:\windows\System32\OpenSSH\;C:\Users\azureadmin\AppData\Local\Microsoft\WindowsApps;;C:\installer\eclipse-jee-2019-12-R-win32-x86_64\eclipse;
+USERNAME=azureadmin
+OS=Windows_NT
+PROCESSOR_IDENTIFIER=Intel64 Family 6 Model 79 Stepping 1, GenuineIntel
+
+
+
+---------------  S Y S T E M  ---------------
+
+OS: Windows 10.0 , 64 bit Build 18362 (10.0.18362.329)
+
+CPU:total 2 (initial active 2) (1 cores per cpu, 2 threads per core) family 6 model 79 stepping 1, cmov, cx8, fxsr, mmx, sse, sse2, sse3, ssse3, sse4.1, sse4.2, popcnt, avx, avx2, aes, clmul, erms, rtm, 3dnowpref, lzcnt, ht, tsc, bmi1, bmi2, adx
+
+Memory: 4k page, physical 16776756k(8093088k free), swap 20970920k(2076k free)
+
+vm_info: Java HotSpot(TM) 64-Bit Server VM (25.231-b11) for windows-amd64 JRE (1.8.0_231-b11), built on Oct  5 2019 03:11:30 by "java_re" with MS VC++ 10.0 (VS2010)
+
+time: Mon Jan 13 14:39:13 2020
+timezone: Coordinated Universal Time
+elapsed time: 1 seconds (0d 0h 0m 1s)
+

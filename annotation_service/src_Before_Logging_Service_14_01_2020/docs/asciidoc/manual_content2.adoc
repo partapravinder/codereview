@@ -1,0 +1,14 @@
+== Algorithms
+
+.	Create Annotation:
+*	Create Annotation core API
+
+.	Delete Annotation:
+*	Delete Annotation core API
+
+.	Get Annotations:
+*	Get Annotations core API
+
+.	Update Annotation Info:
+*	Update Annotation Info core API
+

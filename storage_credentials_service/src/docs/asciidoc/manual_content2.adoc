@@ -1,0 +1,14 @@
+== Algorithms
+
+.	Create Storage Credentials:
+*	Create Storage Credentials API
+
+.	Delete Storage Credentials:
+*	Delete Storage Credentials API
+
+.	Get Storage Credentials:
+*	Get Storage Credentials API
+
+.	Update Storage Credentials Info:
+*	Update Storage Credentials Info API
+
