@@ -1,0 +1,9 @@
+== Storage Credentials Service
+
+Library service which exposes all endpoints to manage storage credentials for ECM.
+
+=== Operations
+
+Operations supported are add, update, delete and fetch.
+
+

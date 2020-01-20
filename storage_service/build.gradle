@@ -1,0 +1,165 @@
+buildscript{
+	ext {
+				springBootVersion = '2.0.5.RELEASE'
+			}
+	repositories {
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath("org.asciidoctor:asciidoctor-gradle-plugin:1.5.3")
+        classpath("org.asciidoctor:asciidoctorj-pdf:1.5.0-alpha.10.1")
+        classpath("io.github.swagger2markup:swagger2markup-spring-restdocs-ext:1.0.0")
+        classpath("io.github.swagger2markup:swagger2markup-gradle-plugin:1.1.0")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'org.asciidoctor.convert'
+apply plugin: 'io.github.swagger2markup'
+apply plugin: 'io.spring.dependency-management'
+
+jar{
+	baseName = 'storage_service'
+}
+version = '0.0.1-SNAPSHOT'
+
+sourceCompatibility = 1.8
+gradle.ext.imageVersion="5.0"
+gradle.ext.dockerRepository="ecmregistry.azurecr.io"
+gradle.ext.buildVMIP="192.168.52.207"
+
+ext{
+  asciiDocOutputDir = file("${buildDir}/asciidoc/generated")
+  swaggerOutputDir = file("${buildDir}/swagger")
+  snippetsOutputDir = file("${buildDir}/asciidoc/snippets")
+  springfoxVersion = '2.6.1'
+  springRetryVersion = '1.2.2.RELEASE'
+  redisVersion = '2.0.10.RELEASE'
+  jedisVersion = '2.9.0'
+  springCloudVersion = 'Finchley.SR1'
+  springRabbitVersion = '2.0.6.RELEASE'
+}
+
+repositories{
+	jcenter()
+	mavenCentral()
+}
+
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
+dependencies{
+	//compile group: 'org.springframework.security', name: 'spring-security-config', version: '4.2.3.RELEASE'
+	//compile group: 'org.springframework.security', name: 'spring-security-web', version: '4.2.3.RELEASE'
+	//compile group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.0'
+	//implementation('org.springframework.cloud:spring-cloud-starter-netflix-eureka-client')
+	compile group:'org.springframework.boot' , name:'spring-boot-starter-web'
+	compile group:'org.springframework.boot' , name:'spring-boot-devtools'
+	//compile group:'org.springframework.boot' , name:'spring-boot-starter-data-mongodb'
+	compile group: 'org.springframework.data', name: 'spring-data-mongodb'
+	compile group:'org.springframework.security' , name:'spring-security-web'
+	compile group:'org.springframework.boot' , name:'spring-boot-starter-actuator'
+	compile group: 'org.json', name: 'json', version: '20180813'
+	compile group: 'com.google.code.gson', name: 'gson'
+	compile group:'io.springfox' , name:'springfox-swagger2' , version: springfoxVersion
+	compile group:'io.springfox' , name:'springfox-swagger-ui' , version: springfoxVersion
+	compile group:'org.springframework.retry' , name:'spring-retry' , version: springRetryVersion
+	compile group:'org.springframework.boot' , name:'spring-boot-starter-aop'
+	compile group:'org.springframework.cloud',name:'spring-cloud-starter-netflix-hystrix'
+	//compile 'org.springframework.cloud:spring-cloud-starter-hystrix-dashboard'
+	compile group:'com.microsoft.azure' , name:'azure-storage' , version: '5.2.0'
+	compile group:'commons-io' , name:'commons-io' , version: '2.5'
+	compile group:'org.springframework.data' , name:'spring-data-redis' , version:redisVersion
+	compile group:'redis.clients' , name:'jedis' , version: jedisVersion
+	compile group:'org.springframework.amqp' , name:'spring-rabbit' , version: springRabbitVersion
+	implementation 'org.codehaus.groovy:groovy-all:2.4.15'															
+	
+	testCompile group:'org.springframework.boot' , name:'spring-boot-starter-test'
+	testCompile "io.springfox:springfox-swagger2:${springfoxVersion}"
+    testCompile "io.springfox:springfox-bean-validators:${springfoxVersion}"
+    testCompile 'junit:junit'
+    testCompile 'org.springframework.restdocs:spring-restdocs-mockmvc'
+}
+group = gradle.dockerRepository
+
+//**** Start of Docker operations *****
+def imageName = "${project.group}/frog.ecm.ecm_server.core/${jar.baseName}:${gradle.imageVersion}"
+
+import org.apache.tools.ant.filters.ReplaceTokens
+task copyDockerfile(type: Copy) {
+    dependsOn "build"
+    from "src/main/docker"
+    into "$buildDir/libs"
+    filter(ReplaceTokens, tokens: [
+        'DOCKER_REPOSITORY': gradle.dockerRepository
+    ])
+}
+
+task buildDockerImage (type: Exec) {
+    dependsOn copyDockerfile
+    commandLine "docker", "build", "-t",imageName , "$buildDir/libs"
+}
+
+task pushDockerImage (type: Exec) {
+    dependsOn buildDockerImage
+    commandLine "docker", "push", imageName
+}
+//**** End of Docker operations *****
+    
+test {
+	exclude '**/RestDocTest.class'
+}
+
+// Automation for documentation using swagger and asciidoctor
+task documentTask(type: Test) {	
+     doFirst{
+       println("Running documentTask")
+     }
+     systemProperty 'io.springfox.staticdocs.outputDir', swaggerOutputDir
+     systemProperty 'io.springfox.staticdocs.snippetsOutputDir', snippetsOutputDir
+}
+
+convertSwagger2markup {
+    dependsOn documentTask
+    swaggerInput "${swaggerOutputDir}/swagger.json"
+    outputDir asciiDocOutputDir
+    config = [
+            'swagger2markup.pathsGroupedBy' : 'TAGS',
+            'swagger2markup.extensions.springRestDocs.snippetBaseUri': snippetsOutputDir.getAbsolutePath()]
+}
+
+asciidoctor {
+    dependsOn convertSwagger2markup
+    sources {
+        include 'index.adoc'
+    }
+    backends = ['html5', 'pdf']
+    attributes = [
+            doctype: 'book',
+            toc: 'left',
+            toclevels: '3',
+            numbered: '',
+            sectlinks: '',
+            sectanchors: '',
+            hardbreaks: '',
+            generated: asciiDocOutputDir
+    ]
+}
+
+configure(buildDockerImage) {   
+    group = 'Docker'
+    description = 'build jar and package to docker image'
+}
+
+configure(pushDockerImage) {   
+    group = 'Docker'
+    description = 'push docker image to dockerHost.newgen.co.in'
+}
