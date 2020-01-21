@@ -1,0 +1,9 @@
+== Cabinet Service
+
+Library service which exposes all endpoints to manage cabinets for ECM.
+
+=== Operations
+
+Operations supported are add, update, delete and fetch.
+
+
